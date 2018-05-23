@@ -2,11 +2,17 @@ import argparse
 import requests
 import random
 import json
-# from PIL import Image
-# from io import BytesIO
 
-BLOCK_W = 8
-BLOCK_H = 8
+#for downloading
+import urllib
+import os
+
+def download(component_name, file_name, image_url):
+    dir_name = component_name
+    if os.path.exists(dir_name) is False:
+        os.mkdir(dir_name)
+    file_location = dir_name + '/' + file_name
+    urllib.urlretrieve(image_url, file_location+".jpg")
 
 
 if __name__ == '__main__':
@@ -30,9 +36,25 @@ if __name__ == '__main__':
 
     for i in node_list:
         if i["type"] == "COMPONENT":
-            component_name = i["name"]
-            name_list = component_name.split("/")
-            name_and_id = [component_name, i["id"]]
+            raw_component_name = i["name"]
+            name_list = raw_component_name.split("/")
+
+            guid = i["id"]
+            #get URL for image file
+            url = "https://api.figma.com/v1/images/{}?ids={}&format=jpg&scale=0.0625".format(args.file_key, guid)
+            resp = requests.get(url, headers=headers)
+            image_url = resp.json()['images'][guid]
+
+            if len(name_list) > 1:
+                component_type = i[0]
+                component_name = "_".join(i[1:len(i)])
+            else:
+                component_type = i[0]
+                component_name = i[0]
+
+            download(component_types, component_name, image_url)
+
+            name_and_id = [component_name, guid, image_url]
             if name_list[0] in component_types:
                 component_types[name_list[0]].append(name_and_id)
             else:
