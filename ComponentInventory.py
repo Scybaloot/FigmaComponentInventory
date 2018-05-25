@@ -39,6 +39,7 @@ if __name__ == '__main__':
     string_response = resp.json()
     node_list = string_response.get("document").get("children")[0].get("children")
 
+    #make dictionary for storing all the component info
     component_types = {}
 
     for i in node_list:
